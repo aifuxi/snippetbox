@@ -22,27 +22,25 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, snippet := range snippets {
-		fmt.Fprintf(w, "%+v\n", snippet)
+	files := []string{
+		"./ui/html/base.tmpl",
+		"./ui/html/partials/nav.tmpl",
+		"./ui/html/pages/home.tmpl",
 	}
 
-	//files := []string{
-	//	"./ui/html/base.tmpl",
-	//	"./ui/html/partials/nav.tmpl",
-	//	"./ui/html/pages/home.tmpl",
-	//}
-	//
-	//parseFiles, err := template.ParseFiles(files...)
-	//if err != nil {
-	//	app.serverError(w, err)
-	//	return
-	//}
-	//
-	//err = parseFiles.ExecuteTemplate(w, "base", nil)
-	//if err != nil {
-	//	app.serverError(w, err)
-	//	return
-	//}
+	parseFiles, err := template.ParseFiles(files...)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	data := templateData{Snippets: snippets}
+
+	err = parseFiles.ExecuteTemplate(w, "base", data)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
 }
 
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
@@ -75,7 +73,9 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = parseFiles.ExecuteTemplate(w, "base", snippet)
+	data := templateData{Snippet: snippet}
+
+	err = parseFiles.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		app.serverError(w, err)
 		return

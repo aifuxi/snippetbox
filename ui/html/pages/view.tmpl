@@ -1,18 +1,17 @@
-{{- /*gotype: github.com/aifuxi/snippetbox/internal/models.Snippet*/ -}}
-{{define "title"}}Snippet #{{.ID}}{{end}}
+{{- /*gotype: github.com/aifuxi/snippetbox/cmd/web.templateData*/ -}}
+{{define "title"}}Snippet #{{.Snippet.ID}}{{end}}
 {{define "main"}}
-    <h1>{{.ID}}</h1>
-    <h2>{{.Expires}}</h2>
-    <div class='snippet'>
-        <div class='metadata'>
-
-            <strong>{{.Title}}</strong>
-            <span>#{{.ID}}</span>
+    {{with .Snippet}}
+        <div class='snippet'>
+            <div class='metadata'>
+                <strong>{{.Title}}</strong>
+                <span>#{{.ID}}</span>
+            </div>
+            <pre><code>{{.Content}}</code></pre>
+            <div class='metadata'>
+                <time>Created: {{.Created}}</time>
+                <time>Expires: {{.Expires}}</time>
+            </div>
         </div>
-        <pre><code>{{.Content}}</code></pre>
-        <div class='metadata'>
-            <time>Created: {{.Created}}</time>
-            <time>Expires: {{.Expires}}</time>
-        </div>
-    </div>
+    {{end}}
 {{end}}
