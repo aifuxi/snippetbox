@@ -1,0 +1,22 @@
+services:
+  mysql8:
+    image: mysql:8
+    restart: unless-stopped
+    environment:
+      # 方法一：设置时区为上海
+      - TZ=Asia/Shanghai
+      # - SET_CONTAINER_TIMEZONE=true # 方法二： 设置时区为上海
+      # - CONTAINER_TIMEZONE=Asia/Shanghai # 方法二： 设置时区为上海
+      # mysql启动时自动创建数据库
+      - MYSQL_DATABASE=snippetbox
+      # 设置root账户密码
+      - MYSQL_ROOT_PASSWORD=123456
+
+    ports:
+      - 33060:3306
+    command: [
+      "mysqld",
+      # 设置字符编码
+      "--character-set-server=utf8mb4",
+      "--collation-server=utf8mb4_unicode_ci",
+    ]
