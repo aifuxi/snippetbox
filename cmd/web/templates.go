@@ -4,11 +4,21 @@ import (
 	"github.com/aifuxi/snippetbox/internal/models"
 	"html/template"
 	"path/filepath"
+	"time"
 )
 
 type templateData struct {
-	Snippet  *models.Snippet
-	Snippets []*models.Snippet
+	CurrentYear int
+	Snippet     *models.Snippet
+	Snippets    []*models.Snippet
+}
+
+func humanDate(t time.Time) string {
+	return t.Format(time.DateTime)
+}
+
+var functions = template.FuncMap{
+	"humanDate": humanDate,
 }
 
 func newTemplateCache() (map[string]*template.Template, error) {
@@ -22,12 +32,20 @@ func newTemplateCache() (map[string]*template.Template, error) {
 	for _, page := range pages {
 		name := filepath.Base(page)
 
-		files := []string{"./ui/html/base.tmpl", "./ui/html/partials/nav.tmpl", page}
+		// 创建一个新的template 注册自定义函数
+		ts, err := template.New(name).Funcs(functions).ParseFiles("./ui/html/base.tmpl")
+		if err != nil {
+			return nil, err
+		}
 
-		// 将一组template解析成1个template
-		ts, err2 := template.ParseFiles(files...)
-		if err2 != nil {
-			return nil, err2
+		ts, err = ts.ParseGlob("./ui/html/partials/*.tmpl")
+		if err != nil {
+			return nil, err
+		}
+
+		ts, err = ts.ParseFiles(page)
+		if err != nil {
+			return nil, err
 		}
 
 		// 将解析好后的template放入缓存
