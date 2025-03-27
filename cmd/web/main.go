@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"flag"
 	"github.com/aifuxi/snippetbox/internal/models"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -18,10 +19,11 @@ type config struct {
 }
 
 type application struct {
-	infoLog  *log.Logger
-	errorLog *log.Logger
-	cfg      config
-	snippets *models.SnippetModel
+	infoLog       *log.Logger
+	errorLog      *log.Logger
+	cfg           config
+	snippets      *models.SnippetModel
+	templateCache map[string]*template.Template
 }
 
 func main() {
@@ -51,6 +53,11 @@ func main() {
 		errorLog.Fatalln(err)
 	}
 
+	templateCache, err := newTemplateCache()
+	if err != nil {
+		errorLog.Fatalln(err)
+	}
+
 	defer db.Close()
 
 	app := &application{
@@ -60,6 +67,7 @@ func main() {
 		snippets: &models.SnippetModel{
 			DB: db,
 		},
+		templateCache: templateCache,
 	}
 
 	infoLog.Printf("Starting server on %v", cfg.addr)
