@@ -61,43 +61,27 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 }
 
 type snippetCreateForm struct {
-	Title   string
-	Content string
-	Expires int
+	Title   string `form:"title"`
+	Content string `form:"content"`
+	Expires int    `form:"expires"`
 
-	validator.Validator
+	validator.Validator `form:"-"`
 }
 
 func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request) {
 
-	// 1. 解析表单提交的数据，失败返回400错误
-	err := r.ParseForm() // 会把解析好的数据存在 r.PostForm 这个map中
+	// 解析表单值到结构体上
+	var form snippetCreateForm
+	err := app.decodePostForm(r, &form)
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
 		return
 	}
 
-	// 2. 从 r.PostForm这个map中提取相应的数据，并保存到数据库中
-	title := r.PostForm.Get("title")
-	content := r.PostForm.Get("content")
-	expires, err := strconv.Atoi(r.PostForm.Get("expires"))
-
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	// 3. 校验参数
-	form := snippetCreateForm{
-		Title:   title,
-		Content: content,
-		Expires: expires,
-	}
-
-	form.CheckField(validator.NotBlank(title), "title", "This field cannot be blank")
-	form.CheckField(validator.MaxChars(title, 100), "title", "This field cannot be more than 100 characters long")
-
-	form.CheckField(validator.NotBlank(content), "content", "This field cannot be blank")
+	// 校验参数
+	form.CheckField(validator.NotBlank(form.Title), "title", "This field cannot be blank")
+	form.CheckField(validator.MaxChars(form.Title, 100), "title", "This field cannot be more than 100 characters long")
+	form.CheckField(validator.NotBlank(form.Content), "content", "This field cannot be blank")
 	permittedValues := []int{1, 7, 365}
 
 	var strValues []string
@@ -107,7 +91,7 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 	result := strings.Join(strValues, ", ")
 
 	form.CheckField(
-		validator.PermittedInt(expires, permittedValues...),
+		validator.PermittedInt(form.Expires, permittedValues...),
 		"content",
 		fmt.Sprintf("This field must equal %s", result),
 	)
@@ -120,7 +104,7 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	id, err := app.snippets.Insert(title, content, expires)
+	id, err := app.snippets.Insert(form.Title, form.Content, form.Expires)
 	if err != nil {
 		app.serverError(w, err)
 		return

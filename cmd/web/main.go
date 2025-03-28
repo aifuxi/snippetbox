@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"flag"
 	"github.com/aifuxi/snippetbox/internal/models"
+	"github.com/go-playground/form/v4"
 	"html/template"
 	"log"
 	"net/http"
@@ -24,6 +25,7 @@ type application struct {
 	cfg           config
 	snippets      *models.SnippetModel
 	templateCache map[string]*template.Template
+	formDecoder   *form.Decoder
 }
 
 func main() {
@@ -60,6 +62,8 @@ func main() {
 
 	defer db.Close()
 
+	formDecoder := form.NewDecoder()
+
 	app := &application{
 		infoLog:  infoLog,
 		errorLog: errorLog,
@@ -68,6 +72,7 @@ func main() {
 			DB: db,
 		},
 		templateCache: templateCache,
+		formDecoder:   formDecoder,
 	}
 
 	infoLog.Printf("Starting server on %v", cfg.addr)
