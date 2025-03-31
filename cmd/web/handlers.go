@@ -18,7 +18,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := app.newTemplateData()
+	data := app.newTemplateData(r)
 	data.Snippets = snippets
 
 	app.render(w, http.StatusOK, "home.tmpl", data)
@@ -45,14 +45,14 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := app.newTemplateData()
+	data := app.newTemplateData(r)
 	data.Snippet = snippet
 
 	app.render(w, http.StatusOK, "view.tmpl", data)
 }
 
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
-	data := app.newTemplateData()
+	data := app.newTemplateData(r)
 	data.Form = snippetCreateForm{
 		Expires: 365,
 	}
@@ -98,7 +98,7 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 
 	// 如果有错，直接返回
 	if !form.Valid() {
-		data := app.newTemplateData()
+		data := app.newTemplateData(r)
 		data.Form = form
 		app.render(w, http.StatusUnprocessableEntity, "create.tmpl", data)
 		return
@@ -109,6 +109,9 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 		app.serverError(w, err)
 		return
 	}
+
+	// 创建成功后，给个提示
+	app.sessionManage.Put(r.Context(), "flash", "Snippet successfully created!")
 
 	// 重定向
 	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)

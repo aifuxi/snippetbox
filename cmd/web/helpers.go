@@ -50,9 +50,10 @@ func (app *application) render(w http.ResponseWriter, status int, page string, d
 	buf.WriteTo(w)
 }
 
-func (app *application) newTemplateData() *templateData {
+func (app *application) newTemplateData(r *http.Request) *templateData {
 	return &templateData{
 		CurrentYear: time.Now().Year(),
+		Flash:       app.sessionManage.PopString(r.Context(), "flash"), // 先取出存储的flash提示信息，然后删除
 	}
 }
 
