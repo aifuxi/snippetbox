@@ -71,6 +71,7 @@ func main() {
 	sessionManager := scs.New()
 	sessionManager.Store = mysqlstore.New(db)
 	sessionManager.Lifetime = 12 * time.Hour
+	sessionManager.Cookie.Secure = true // 设置为true时，只会在使用https时才发送cookie到服务器
 
 	app := &application{
 		infoLog:  infoLog,
@@ -87,12 +88,15 @@ func main() {
 	infoLog.Printf("Starting server on %v", cfg.addr)
 
 	srv := http.Server{
-		Addr:     cfg.addr,
-		Handler:  app.routes(),
-		ErrorLog: errorLog,
+		Addr:         cfg.addr,
+		Handler:      app.routes(),
+		ErrorLog:     errorLog,
+		IdleTimeout:  time.Minute,      // 单个链接最大空闲超时时间
+		ReadTimeout:  5 * time.Second,  // 请求超时时间
+		WriteTimeout: 10 * time.Second, // 返回响应内容的超时时间
 	}
 
-	err = srv.ListenAndServe()
+	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
 	if err != nil {
 		errorLog.Fatalln(err)
 	}
