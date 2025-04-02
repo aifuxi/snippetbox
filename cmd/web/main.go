@@ -23,14 +23,14 @@ type config struct {
 }
 
 type application struct {
-	infoLog       *log.Logger
-	errorLog      *log.Logger
-	cfg           config
-	snippets      *models.SnippetModel
-	users         *models.UserModel
-	templateCache map[string]*template.Template
-	formDecoder   *form.Decoder
-	sessionManage *scs.SessionManager
+	infoLog        *log.Logger
+	errorLog       *log.Logger
+	cfg            config
+	snippets       *models.SnippetModel
+	users          *models.UserModel
+	templateCache  map[string]*template.Template
+	formDecoder    *form.Decoder
+	sessionManager *scs.SessionManager
 }
 
 func main() {
@@ -84,9 +84,9 @@ func main() {
 		users: &models.UserModel{
 			DB: db,
 		},
-		templateCache: templateCache,
-		formDecoder:   formDecoder,
-		sessionManage: sessionManager,
+		templateCache:  templateCache,
+		formDecoder:    formDecoder,
+		sessionManager: sessionManager,
 	}
 
 	infoLog.Printf("Starting server on %v", cfg.addr)
